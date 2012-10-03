@@ -206,7 +206,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
         
         public void SendMessageToGroup(GridInstantMessage im, UUID groupID)
         {
-            List<GroupMembersData> groupMembers = m_groupData.GetGroupMembers(new UUID(im.fromAgentID), groupID);
+            List<GroupMembersData> groupMembers = m_groupData.GetGroupMembers(new UUID(im.fromAgentID), groupID, false);
             
             if (m_debugEnabled) 
                 m_log.DebugFormat(

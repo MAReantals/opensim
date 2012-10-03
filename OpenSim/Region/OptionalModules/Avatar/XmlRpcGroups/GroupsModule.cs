@@ -167,8 +167,8 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
             scene.EventManager.OnNewClient += OnNewClient;
             scene.EventManager.OnIncomingInstantMessage += OnGridInstantMessage;
             // The InstantMessageModule itself doesn't do this, 
-            // so lets see if things explode if we don't do it
-            // scene.EventManager.OnClientClosed += OnClientClosed;
+            // implemented for online and last login data thou
+            scene.EventManager.OnClientClosed += OnClientClosed;
 
         }
 
@@ -273,6 +273,19 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
             }
         }
         */
+
+        //Implementation for Online status of agents
+        private void OnClientClosed(UUID agentID, Scene scene)
+        {
+            if (m_debugEnabled) m_log.DebugFormat("[GROUPS]: {0} called", System.Reflection.MethodBase.GetCurrentMethod().Name);
+
+            ScenePresence sp = scene.GetScenePresence(agentID);
+            if (sp != null && !sp.IsChildAgent)
+            {
+                //Update online status of agent
+                UpdateRequestingAgentLogin(UUID.Zero, agentID);
+            }
+        }
 
         void OnDirFindQuery(IClientAPI remoteClient, UUID queryID, string queryText, uint queryFlags, int queryStart)
         {
@@ -453,7 +466,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
                     }
 
                     // Send notice out to everyone that wants notices
-                    foreach (GroupMembersData member in m_groupData.GetGroupMembers(GetRequestingAgentID(remoteClient), GroupID))
+                    foreach (GroupMembersData member in m_groupData.GetGroupMembers(GetRequestingAgentID(remoteClient), GroupID, true))
                     {
                          if (m_debugEnabled)
                         {
@@ -592,8 +605,8 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
             if (m_debugEnabled) 
                 m_log.DebugFormat(
                     "[GROUPS]: GroupMembersRequest called for {0} from client {1}", groupID, remoteClient.Name);
-            
-            List<GroupMembersData> data = m_groupData.GetGroupMembers(GetRequestingAgentID(remoteClient), groupID);
+
+            List<GroupMembersData> data = m_groupData.GetGroupMembers(GetRequestingAgentID(remoteClient), groupID, true);
 
             if (m_debugEnabled)
             {
@@ -646,7 +659,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
                 profile.Charter = groupInfo.Charter;
                 profile.FounderID = groupInfo.FounderID;
                 profile.GroupID = groupID;
-                profile.GroupMembershipCount = m_groupData.GetGroupMembers(GetRequestingAgentID(remoteClient), groupID).Count;
+                profile.GroupMembershipCount = m_groupData.GetGroupMembers(GetRequestingAgentID(remoteClient), groupID, true).Count;
                 profile.GroupRolesCount = m_groupData.GetGroupRoles(GetRequestingAgentID(remoteClient), groupID).Count;
                 profile.InsigniaID = groupInfo.GroupPicture;
                 profile.MaturePublish = groupInfo.MaturePublish;
@@ -671,6 +684,8 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
         public GroupMembershipData[] GetMembershipData(UUID agentID)
         {
             if (m_debugEnabled) m_log.DebugFormat("[GROUPS]: {0} called", System.Reflection.MethodBase.GetCurrentMethod().Name);
+
+            UpdateRequestingAgentLogin(UUID.Zero, agentID); //Update online status of agent
 
             return m_groupData.GetAgentGroupMemberships(UUID.Zero, agentID).ToArray();
         }
@@ -1148,6 +1163,14 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
                 }
             }
         }
+
+        private void UpdateRequestingAgentLogin(UUID requestingAgentID, UUID agentID)
+        {
+            GridUserInfo userInfo = m_sceneList[0].GridUserService.GetGridUserInfo(agentID.ToString());
+
+            m_groupData.UpdateAgentLoginData(requestingAgentID, agentID, userInfo.Online, userInfo.Login);
+        }
+    }
 
         #endregion
 

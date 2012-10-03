@@ -646,10 +646,11 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
             return Roles;
         }
 
-        public List<GroupMembersData> GetGroupMembers(UUID requestingAgentID, UUID GroupID)
+        public List<GroupMembersData> GetGroupMembers(UUID requestingAgentID, UUID GroupID, bool ListOffline)
         {
             Hashtable param = new Hashtable();
             param["GroupID"] = GroupID.ToString();
+            param["ListOffline"] = ListOffline.ToString();
 
             Hashtable respData = XmlRpcCall(requestingAgentID, "groups.getGroupMembers", param);
 
@@ -660,8 +661,21 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
                 return members;
             }
 
+            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0); 
+
             foreach (Hashtable membership in respData.Values)
             {
+                string LastLogin;
+                if ((string)membership["Online"] == "1")
+                {
+                    LastLogin = "Online";
+                }
+                else
+                {
+                    DateTime Login = origin.AddSeconds(Convert.ToDouble(membership["LastLogin"]));
+                    LastLogin = Login.ToShortDateString().ToString();
+                }
+
                 GroupMembersData data = new GroupMembersData();
 
                 data.AcceptNotices = ((string)membership["AcceptNotices"]) == "1";
@@ -671,6 +685,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
                 data.ListInProfile = ((string)membership["ListInProfile"]) == "1";
                 data.AgentPowers = ulong.Parse((string)membership["AgentPowers"]);
                 data.Title = (string)membership["Title"];
+                data.OnlineStatus = LastLogin;
 
                 members.Add(data);
             }
@@ -777,7 +792,17 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
             XmlRpcCall(requestingAgentID, "groups.addGroupNotice", param);
         }
 
+        public void UpdateAgentLoginData(UUID requestingAgentID, UUID agentID, bool agentOnline, DateTime Login)
+        {
+            TimeSpan span = (Login - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime());
 
+            Hashtable param = new Hashtable();
+            param["AgentID"] = agentID.ToString();
+            param["agentOnline"] = agentOnline.ToString();
+            param["LastLogin"] = span.TotalSeconds.ToString();
+
+            XmlRpcCall(requestingAgentID, "groups.setAgentLoginData", param);
+        }
 
         #endregion
 

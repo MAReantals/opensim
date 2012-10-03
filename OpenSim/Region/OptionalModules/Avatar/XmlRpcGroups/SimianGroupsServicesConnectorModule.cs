@@ -869,7 +869,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
 
 
 
-        public List<GroupMembersData> GetGroupMembers(UUID requestingAgentID, UUID GroupID)
+        public List<GroupMembersData> GetGroupMembers(UUID requestingAgentID, UUID GroupID, bool ListOffline)
         {
             if (m_debugEnabled) m_log.InfoFormat("[SIMIAN-GROUPS-CONNECTOR]  {0} called", System.Reflection.MethodBase.GetCurrentMethod().Name);
 
@@ -1021,6 +1021,11 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
 
             SimianAddGeneric(groupID, "GroupNotice", noticeID.ToString(), Notice);
             
+        }
+        
+        public void UpdateAgentLoginData(UUID requestingAgentID, UUID agentID, bool agentOnline, DateTime Login)
+        {
+            //Implementation of online and last login status
         }
         #endregion
 

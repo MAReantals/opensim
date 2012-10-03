@@ -38,7 +38,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
         void UpdateGroup(UUID RequestingAgentID, UUID groupID, string charter, bool showInList, UUID insigniaID, int membershipFee, bool openEnrollment, bool allowPublish, bool maturePublish);
         GroupRecord GetGroupRecord(UUID RequestingAgentID, UUID GroupID, string GroupName);
         List<DirGroupsReplyData> FindGroups(UUID RequestingAgentID, string search);
-        List<GroupMembersData> GetGroupMembers(UUID RequestingAgentID, UUID GroupID);
+        List<GroupMembersData> GetGroupMembers(UUID RequestingAgentID, UUID GroupID, bool ListOffline);
 
         void AddGroupRole(UUID RequestingAgentID, UUID groupID, UUID roleID, string name, string description, string title, ulong powers);
         void UpdateGroupRole(UUID RequestingAgentID, UUID groupID, UUID roleID, string name, string description, string title, ulong powers);
@@ -62,6 +62,8 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
 
         void SetAgentActiveGroupRole(UUID RequestingAgentID, UUID AgentID, UUID GroupID, UUID RoleID);
         void SetAgentGroupInfo(UUID RequestingAgentID, UUID AgentID, UUID GroupID, bool AcceptNotices, bool ListInProfile);
+
+        void UpdateAgentLoginData(UUID requestingAgentID, UUID agentID, bool agentOnline, DateTime Login);
 
         /// <summary>
         /// Get information about a specific group to which the user belongs.

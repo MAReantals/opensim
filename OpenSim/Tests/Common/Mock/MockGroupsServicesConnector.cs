@@ -188,7 +188,7 @@ namespace OpenSim.Tests.Common.Mock
             return null;
         }
 
-        public List<GroupMembersData> GetGroupMembers(UUID requestingAgentID, UUID GroupID)
+        public List<GroupMembersData> GetGroupMembers(UUID requestingAgentID, UUID GroupID, bool ListOffline)
         {
             return null;
         }
@@ -231,6 +231,10 @@ namespace OpenSim.Tests.Common.Mock
         }
 
         public void AgentInvitedToGroupChatSession(UUID agentID, UUID groupID)
+        {
+        }
+
+        public void UpdateAgentLoginData(UUID requestingAgentID, UUID agentID, bool agentOnline, DateTime Login)
         {
         }
     }
